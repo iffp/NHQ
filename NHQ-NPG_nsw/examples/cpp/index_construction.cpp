@@ -80,10 +80,9 @@ int main(int argc, char **argv)
 	// Print statistics
 	std::chrono::duration<double> diff = end_time - start_time;
 	double duration = diff.count();
-	peak_memory_footprint();
 
 	// Report statistics
-	printf("Index construction time: %.3f\n", duration);
+	printf("Index construction time: %.3f s\n", duration);
     peak_memory_footprint();
 
 	// Save the index to file
@@ -91,4 +90,6 @@ int main(int argc, char **argv)
 	std::string index_path_attribute_table = path_index + "_attribute_table";
     nhq_index.SaveModel(index_path_model);
     nhq_index.SaveAttributeTable(index_path_attribute_table);
+
+	return 0;
 }

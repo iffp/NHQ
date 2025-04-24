@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	// Check if the number of arguments is correct
     if (argc != 8)
     {
-		fprintf(stderr, "Usage: %s <path_query_vectors> <path_query_attributes> <path_groundtruth> <path_index> <k> <weight> <efSearch>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path_query_vectors> <path_query_attributes> <path_groundtruth> <path_index> <k> <weight_search> <ef_search>\n", argv[0]);
 		exit(1);
     }
 
