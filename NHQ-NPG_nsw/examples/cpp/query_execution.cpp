@@ -10,6 +10,8 @@
 #include <sstream>
 #include <fstream>
 
+#include "fanns_survey_helpers.cpp"
+
 using namespace std;
 
 int main(int argc, char **argv)
@@ -30,7 +32,7 @@ int main(int argc, char **argv)
 	// Check if the number of arguments is correct
     if (argc != 8)
     {
-		fprintf(stderr, "Usage: %s <path_query_vectors> <path_query_attributes> <path_groundtruth> <path_index> <k> <weight_search> <ef_search>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <path_query_vectors> <path_query_attributes> <path_groundtruth> <path_index> <k> <weight> <efSearch>\n", argv[0]);
 		exit(1);
     }
 
@@ -45,8 +47,8 @@ int main(int argc, char **argv)
 
 	// Read query vectors
 	vector<vector<float>> query_vectors = read_fvecs(path_query_vectors);
-	n_queries = query_vectors.size();
-	d = query_vectors[0].size();
+	size_t n_queries = query_vectors.size();
+	size_t d = query_vectors[0].size();
 
 	// Read query attributes
 	vector<int> query_attributes = read_one_int_per_line(path_query_attributes);
@@ -54,7 +56,7 @@ int main(int argc, char **argv)
 
 	// Transform query attributes into format required by NHQ
 	std::vector<std::vector<std::string>> query_attributes_str;
-	for (std::size_t i = 0; i < input.size(); ++i) {
+	for (std::size_t i = 0; i < query_attributes.size(); ++i) {
 		query_attributes_str.push_back({std::to_string(query_attributes[i])});
 	}
 
@@ -101,7 +103,7 @@ int main(int argc, char **argv)
 		vector<int> groundtruth_q = groundtruth[i];
 		vector<int> result_q;
 		for (int j = 0; j < k; j++){
-			result_q.push_back(stoi(result[i][j].first));
+			result_q.push_back(result[i][j].first);
 		}
 		sort(groundtruth_q.begin(), groundtruth_q.end());
 		sort(result_q.begin(), result_q.end());

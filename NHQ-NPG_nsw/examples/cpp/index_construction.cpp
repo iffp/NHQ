@@ -13,6 +13,8 @@
 
 #include <thread>
 
+#include "fanns_survey_helpers.cpp"
+
 using namespace std;
 
 int main(int argc, char **argv)
@@ -55,13 +57,13 @@ int main(int argc, char **argv)
 
 	// Transform database attributes into format required by NHQ
 	std::vector<std::vector<std::string>> database_attributes_str;
-	for (std::size_t i = 0; i < input.size(); ++i) {
+	for (std::size_t i = 0; i < database_attributes.size(); ++i) {
 		database_attributes_str.push_back({std::to_string(database_attributes[i])});
 	}
 	
 	// Initialize and configure the NHQ index
-    n2::Hnsw nhq_index(dim, "L2");
-	vector<pair<string, string>> configs = {{"M", M}, {"MaxM0", MaxM0}, {"NumThread", NumThread}, {"efConstruction", efConstruction}};
+    n2::Hnsw nhq_index(d, "L2");
+	vector<pair<string, string>> configs = {{"M", to_string(M)}, {"MaxM0", to_string(MaxM0)}, {"NumThread", to_string(NumThread)}, {"efConstruction", to_string(efConstruction)}};
 	nhq_index.SetConfigs(configs);
 
 	// Construct index (timed)
@@ -72,7 +74,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < n_items; i++) {
 		nhq_index.AddAllNodeAttributes(database_attributes_str[i]);
 	}
-    index.Fit();
+    nhq_index.Fit();
 	auto end_time = std::chrono::high_resolution_clock::now();
 
 	// Print statistics
@@ -87,6 +89,6 @@ int main(int argc, char **argv)
 	// Save the index to file
 	std::string index_path_model = path_index + "_model";
 	std::string index_path_attribute_table = path_index + "_attribute_table";
-    index.SaveModel(index_path_model);
-    index.SaveAttributeTable(index_path_attribute_table);
+    nhq_index.SaveModel(index_path_model);
+    nhq_index.SaveAttributeTable(index_path_attribute_table);
 }
