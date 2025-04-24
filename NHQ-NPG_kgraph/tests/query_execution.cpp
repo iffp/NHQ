@@ -1,4 +1,5 @@
 #include <chrono>
+#include <thread>
 
 #include "efanna2e/index_random.h"
 #include "efanna2e/index_graph.h"
@@ -45,14 +46,13 @@ int main(int argc, char **argv){
 	srand(seed);
 
 	// Read query vectors
-	int n_queries;
-	int d;
+	unsigned n_queries, d;
 	float *query_vectors = nullptr;
-	load_data(path_query_vectors.c_str(), query_vectors, n_queries, d);
+	efanna2e::load_data(const_cast<char*>(path_query_vectors.c_str()), query_vectors, n_queries, d);
 	query_vectors = efanna2e::data_align(query_vectors, n_queries, d);
 
 	// Read query attributes
-	vector<vector<int>> query_attributes = read_one_int_per_line(path_query_attributes);
+	vector<int> query_attributes = read_one_int_per_line(path_query_attributes);
 	assert(query_attributes.size() == n_queries);
 
     // Transform query attributes into format required by NHQ

@@ -119,4 +119,6 @@ int main(int argc, char **argv)
 	peak_memory_footprint();
 	printf("Queries per second: %.3f\n", qps);
 	printf("Recall: %.3f\n", recall);
+
+	return 0;
 }

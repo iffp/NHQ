@@ -57,11 +57,11 @@ int main(int argc, char **argv)
 	// Load database vectors
 	float *database_vectors = NULL;
  	unsigned n_items, d;
- 	efanna2e::load_data(path_database_vectors.c_str(), database_vectors, n_items, d);
+	efanna2e::load_data(const_cast<char*>(path_database_vectors.c_str()), database_vectors, n_items, d);
  	database_vectors = efanna2e::data_align(database_vectors, n_items, d); //one must align the data before build
 
-	// Load query vectors
-	std::vector<std::vector<int>> database_attributes = read_one_int_per_line(path_database_attributes);
+	// Load database attributes
+	std::vector<int> database_attributes = read_one_int_per_line(path_database_attributes);
 	assert(database_attributes.size() == n_items);
 
 	// Transform database attributes into format required by NHQ
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	// Print statistics
 	std::chrono::duration<double> diff = end_time - start_time;
 	double duration = diff.count();
-	peek_memory_footprint();
+	peak_memory_footprint();
 
 	// Report statistics
 	printf("Index construction time: %.3f s\n", duration);
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 	// Save the index to file
 	std::string index_path_model  = path_index + "_model";
 	std::string index_path_attribute_table = path_index + "_attribute_table";
-	nhq_index.Save(index_path_model);
-	nhq_index.SaveAttributeTable(index_path_attribute_table);
+	nhq_index.Save(index_path_model.c_str());
+	nhq_index.SaveAttributeTable(index_path_attribute_table.c_str());
 	return 0;
 }
