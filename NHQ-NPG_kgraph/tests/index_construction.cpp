@@ -90,22 +90,21 @@ int main(int argc, char **argv)
 		nhq_index.AddAllNodeAttributes(database_attributes_str[i]);
 	}
 	nhq_index.Build(n_items, database_vectors, paras);
-	nhq_index.OptimizeGraph(database_vectors);
 	auto end_time = std::chrono::high_resolution_clock::now();
 
-	// Print statistics
+	// Compute statistics
 	std::chrono::duration<double> diff = end_time - start_time;
 	double duration = diff.count();
-	peak_memory_footprint();
-
-	// Report statistics
-	printf("Index construction time: %.3f s\n", duration);
-	peak_memory_footprint();
 
 	// Save the index to file
 	std::string index_path_model  = path_index + "_model";
 	std::string index_path_attribute_table = path_index + "_attribute_table";
 	nhq_index.Save(index_path_model.c_str());
 	nhq_index.SaveAttributeTable(index_path_attribute_table.c_str());
+
+	// Report statistics
+	printf("Index construction time: %.3f s\n", duration);
+	peak_memory_footprint();
+
 	return 0;
 }

@@ -15,6 +15,7 @@ int main(int argc, char **argv){
     std::cout << "Number of threads: " << nthreads << std::endl;
 
     // Parameters
+    std::string path_database_vectors;
     std::string path_query_vectors;
     std::string path_query_attributes;
     std::string path_groundtruth;
@@ -22,34 +23,40 @@ int main(int argc, char **argv){
     int k;
     int weight_search;
     int L_search;
-	int n_items;
 
     // Check if the number of arguments is correct
     if (argc != 9)
     {
-        fprintf(stderr, "Usage: %s <path_query_vectors> <path_query_attributes> <path_groundtruth> <path_index> <k> <weight_search> <L_search> <n_items>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <path_database_vectors> <path_query_vectors> <path_query_attributes> <path_groundtruth> <path_index> <k> <weight_search> <L_search>\n", argv[0]);
         exit(1);
     }
 
     // Read command line arguments
-    path_query_vectors = argv[1];
-    path_query_attributes = argv[2];
-    path_groundtruth = argv[3];
-    path_index = argv[4];
-    k = atoi(argv[5]);
-    weight_search = atoi(argv[6]);
-	L_search = atoi(argv[7]);
-	n_items = atoi(argv[8]);
+	path_database_vectors = argv[1];
+    path_query_vectors = argv[2];
+    path_query_attributes = argv[3];
+    path_groundtruth = argv[4];
+    path_index = argv[5];
+    k = atoi(argv[6]);
+    weight_search = atoi(argv[7]);
+	L_search = atoi(argv[8]);
 
 	// Setting seed
 	unsigned seed = 161803398;
 	srand(seed);
 
+	// Read database vectors
+	unsigned n_items, d;
+	float *database_vectors = nullptr;
+	efanna2e::load_data(const_cast<char*>(path_database_vectors.c_str()), database_vectors, n_items, d);
+	database_vectors = efanna2e::data_align(database_vectors, n_items, d);
+
 	// Read query vectors
-	unsigned n_queries, d;
+	unsigned n_queries, d2;
 	float *query_vectors = nullptr;
-	efanna2e::load_data(const_cast<char*>(path_query_vectors.c_str()), query_vectors, n_queries, d);
-	query_vectors = efanna2e::data_align(query_vectors, n_queries, d);
+	efanna2e::load_data(const_cast<char*>(path_query_vectors.c_str()), query_vectors, n_queries, d2);
+	query_vectors = efanna2e::data_align(query_vectors, n_queries, d2);
+	assert(d == d2);
 
 	// Read query attributes
 	vector<int> query_attributes = read_one_int_per_line(path_query_attributes);
@@ -79,6 +86,11 @@ int main(int argc, char **argv){
     std::string index_path_attribute_table = path_index + "_attribute_table";
 	nhq_index.Load(index_path_model.c_str());
 	nhq_index.LoadAttributeTable(index_path_attribute_table.c_str());
+
+	// Perform the Optimizations	
+	// TODO: Should this be timed as well?
+	// NOTE: Doesn't work if we add this in the index construction
+	nhq_index.OptimizeGraph(database_vectors);
 
 	// Prepare search parameters
 	efanna2e::Parameters paras;
