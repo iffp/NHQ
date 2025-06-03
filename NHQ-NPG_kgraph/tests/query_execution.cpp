@@ -5,14 +5,23 @@
 #include "efanna2e/index_graph.h"
 #include "efanna2e/util.h"
 
+#include <atomic>
+#include <omp.h>
 #include "fanns_survey_helpers.cpp"
+#include "global_thread_counter.h"
 
 using namespace std;
 
+// Global atomic to store peak thread count
+std::atomic<int> peak_threads(1);
+
 int main(int argc, char **argv){
-    // Get number of threads
-    unsigned int nthreads = std::thread::hardware_concurrency();
-    std::cout << "Number of threads: " << nthreads << std::endl;
+    // Restrict number of threads to 1 for query execution
+    omp_set_num_threads(1);
+
+    // Monitor thread count
+    std::atomic<bool> done(false);
+    std::thread monitor(monitor_thread_count, std::ref(done));
 
     // Parameters
     std::string path_database_vectors;
@@ -111,6 +120,10 @@ int main(int argc, char **argv){
 	}
 	auto end_time = std::chrono::high_resolution_clock::now();
 
+    // Stop thread count monitoring
+    done = true;
+    monitor.join();
+
 	// Compute search time
 	std::chrono::duration<double> diff = end_time - start_time;
 	double query_execution_time = diff.count();
@@ -136,6 +149,7 @@ int main(int argc, char **argv){
 	// Report results
 	double recall = (double)match_count / total_count;	
 	double qps = n_queries / query_execution_time;
+	printf("Maximum number of threads: %d\n", peak_threads.load()-1);   // Subtract 1 because of the monitoring thread
 	peak_memory_footprint();
 	printf("Queries per second: %.3f\n", qps);
 	printf("Recall: %.3f\n", recall);

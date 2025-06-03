@@ -7,15 +7,25 @@
 
 #include <thread>
 
+#include <atomic>
+#include <omp.h>
 #include "fanns_survey_helpers.cpp"
+#include "global_thread_counter.h"
+
+// Global atomic to store peak thread count
+std::atomic<int> peak_threads(1);
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
-    // Get number of threads
+    // Get number of WH threads and use that number of threads for the index construction
     unsigned int nthreads = std::thread::hardware_concurrency();
-    std::cout << "Number of threads: " << nthreads << std::endl;
+    omp_set_num_threads(nthreads);
+
+    // Prepare thread monitoring
+    std::atomic<bool> done(false);
+    std::thread monitor(monitor_thread_count, std::ref(done));
 
     // Parameters
     std::string path_database_vectors;
@@ -92,19 +102,22 @@ int main(int argc, char **argv)
 	nhq_index.Build(n_items, database_vectors, paras);
 	auto end_time = std::chrono::high_resolution_clock::now();
 
-	// Compute statistics
+    // Stop thread monitoring
+    done = true;
+    monitor.join();
+
+	// Print statistics
 	std::chrono::duration<double> diff = end_time - start_time;
 	double duration = diff.count();
+	printf("Maximum number of threads: %d\n", peak_threads.load()-1);   // Subtract 1 because of the monitoring thread
+	printf("Index construction time: %.3f s\n", duration);
+	peak_memory_footprint();
 
-	// Save the index to file
+	// Save the index
 	std::string index_path_model  = path_index + "_model";
 	std::string index_path_attribute_table = path_index + "_attribute_table";
 	nhq_index.Save(index_path_model.c_str());
 	nhq_index.SaveAttributeTable(index_path_attribute_table.c_str());
-
-	// Report statistics
-	printf("Index construction time: %.3f s\n", duration);
-	peak_memory_footprint();
 
 	return 0;
 }
