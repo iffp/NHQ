@@ -36,7 +36,7 @@ namespace efanna2e {
       std::ios::pos_type ss = in.tellg();
       size_t fsize = (size_t)ss;
       num = (unsigned)(fsize / (dim+1) / 4);
-      data = new float[num * dim * sizeof(float)];
+      data = new float[(uint64_t)num * (uint64_t)dim * sizeof(float)];
 
       in.seekg(0,std::ios::beg);
       for(size_t i = 0; i < num; i++){
@@ -64,12 +64,12 @@ namespace efanna2e {
       unsigned new_dim = (dim + DATA_ALIGN_FACTOR - 1) / DATA_ALIGN_FACTOR * DATA_ALIGN_FACTOR;
       std::cout << "align to new dim: "<<new_dim << std::endl;
       #ifdef __APPLE__
-        data_new = new float[new_dim * point_num];
+        data_new = new float[(uint64_t)new_dim * (uint64_t)point_num];
       #else
-        data_new = (float*)memalign(DATA_ALIGN_FACTOR * 4, point_num * new_dim * sizeof(float));
+        data_new = (float*)memalign(DATA_ALIGN_FACTOR * 4, (uint64_t)point_num * (uint64_t)new_dim * sizeof(float));
       #endif
 
-      for(unsigned i=0; i<point_num; i++){
+      for(uint64_t i=0; i<point_num; i++){
         memcpy(data_new + i * new_dim, data_ori + i * dim, dim * sizeof(float));
         memset(data_new + i * new_dim + dim, 0, (new_dim - dim) * sizeof(float));
       }
